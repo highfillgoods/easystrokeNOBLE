@@ -533,95 +533,110 @@ public:
 	virtual Grabber::State grab_mode() { return parent->grab_mode(); }
 };
 
-static inline float abs(float x) { return x > 0 ? x : -x; }
+// ... earlier in the file ...
+#include <cmath>  // Ensure this is included at the top
 
 class AbstractScrollHandler : public Handler {
-	bool have_x, have_y;
-	float last_x, last_y;
-	Time last_t;
-	float offset_x, offset_y;
-	Glib::ustring str;
-	int orig_x, orig_y;
+protected:
+    // Missing member variables:
+    bool have_x, have_y;
+    float last_x, last_y;
+    Time last_t;
+    float offset_x, offset_y;
+    int orig_x, orig_y;  // Added to support move_back()
 
-protected:
-	AbstractScrollHandler() : have_x(false), have_y(false), last_x(0.0), last_y(0.0), last_t(0), offset_x(0.0), offset_y(0.0) {
-		if (!prefs.move_back.get() || (xstate->current_dev && xstate->current_dev->absolute))
-			return;
-		Window dummy1, dummy2;
-		int dummy3, dummy4;
-		unsigned int dummy5;
-		XQueryPointer(dpy, ROOT, &dummy1, &dummy2, &orig_x, &orig_y, &dummy3, &dummy4, &dummy5);
-	}
-	virtual void fake_wheel(int b1, int n1, int b2, int n2) {
-		for (int i = 0; i<n1; i++)
-			xstate->fake_click(b1);
-		for (int i = 0; i<n2; i++)
-			xstate->fake_click(b2);
-	}
-	static float curve(float v) {
-		return v * exp(log(abs(v))/3);
-	}
-protected:
-	void move_back() {
-		if (!prefs.move_back.get() || (xstate->current_dev && xstate->current_dev->absolute))
-			return;
-		XTestFakeMotionEvent(dpy, DefaultScreen(dpy), orig_x, orig_y, 0);
-	}
 public:
-	virtual void raw_motion(RTriple e, bool abs_x, bool abs_y) {
-		float dx = abs_x ? (have_x ? e->x - last_x : 0) : e->x;
-		float dy = abs_y ? (have_y ? e->y - last_y : 0) : e->y;
+    // Constructor: initialize members and set orig_x/orig_y via XQueryPointer
+    AbstractScrollHandler() 
+      : have_x(false), have_y(false),
+        last_x(0.0f), last_y(0.0f), last_t(0),
+        offset_x(0.0f), offset_y(0.0f),
+        orig_x(0), orig_y(0)
+    {
+        if (!prefs.move_back.get() || (xstate->current_dev && xstate->current_dev->absolute))
+            return;
+        Window dummy1, dummy2;
+        int dummy3, dummy4;
+        unsigned int dummy5;
+        // Query pointer to set orig_x and orig_y
+        XQueryPointer(dpy, ROOT, &dummy1, &dummy2, &orig_x, &orig_y, &dummy3, &dummy4, &dummy5);
+    }
 
-		if (abs_x) {
-			last_x = e->x;
-			have_x = true;
-		}
+    // Define fake_wheel as a member function:
+    virtual void fake_wheel(int b1, int n1, int b2, int n2) {
+        for (int i = 0; i < n1; i++)
+            xstate->fake_click(b1);
+        for (int i = 0; i < n2; i++)
+            xstate->fake_click(b2);
+    }
 
-		if (abs_y) {
-			last_y = e->y;
-			have_y = true;
-		}
+protected:
+    // Use std::abs in the curve function.
+    static float curve(float v) {
+        return v * exp(log(std::abs(v)) / 3);
+    }
 
-		if (!last_t) {
-			last_t = e->t;
-			return;
-		}
+    // move_back uses orig_x and orig_y
+    void move_back() {
+        if (!prefs.move_back.get() || (xstate->current_dev && xstate->current_dev->absolute))
+            return;
+        XTestFakeMotionEvent(dpy, DefaultScreen(dpy), orig_x, orig_y, 0);
+    }
 
-		if (e->t == last_t)
-			return;
+public:
+    // raw_motion: uses the new member variables and calls fake_wheel via "this->"
+    virtual void raw_motion(RTriple e, bool abs_x, bool abs_y) {
+        float dx = abs_x ? (have_x ? e->x - last_x : 0) : e->x;
+        float dy = abs_y ? (have_y ? e->y - last_y : 0) : e->y;
 
-		int dt = e->t - last_t;
-		last_t = e->t;
+        if (abs_x) {
+            last_x = e->x;
+            have_x = true;
+        }
+        if (abs_y) {
+            last_y = e->y;
+            have_y = true;
+        }
 
-		double factor = (prefs.scroll_invert.get() ? 1.0 : -1.0) * prefs.scroll_speed.get();
-		offset_x += factor * curve(dx/dt)*dt/20.0;
-		offset_y += factor * curve(dy/dt)*dt/10.0;
-		int b1 = 0, n1 = 0, b2 = 0, n2 = 0;
-		if (abs(offset_x) > 1.0) {
-			n1 = (int)floor(abs(offset_x));
-			if (offset_x > 0) {
-				b1 = 7;
-				offset_x -= n1;
-			} else {
-				b1 = 6;
-				offset_x += n1;
-			}
-		}
-		if (abs(offset_y) > 1.0) {
-			if (abs(offset_y) < 1.0)
-				return;
-			n2 = (int)floor(abs(offset_y));
-			if (offset_y > 0) {
-				b2 = 5;
-				offset_y -= n2;
-			} else {
-				b2 = 4;
-				offset_y += n2;
-			}
-		}
-		if (n1 || n2)
-			fake_wheel(b1,n1, b2,n2);
-	}
+        if (!last_t) {
+            last_t = e->t;
+            return;
+        }
+        if (e->t == last_t)
+            return;
+
+        int dt = e->t - last_t;
+        last_t = e->t;
+
+        double factor = (prefs.scroll_invert.get() ? 1.0 : -1.0) * prefs.scroll_speed.get();
+        offset_x += factor * curve(dx / dt) * dt / 20.0;
+        offset_y += factor * curve(dy / dt) * dt / 10.0;
+        int b1 = 0, n1 = 0, b2 = 0, n2 = 0;
+        if (std::abs(offset_x) > 1.0f) {
+            n1 = (int)floor(std::abs(offset_x));
+            if (offset_x > 0) {
+                b1 = 7;
+                offset_x -= n1;
+            } else {
+                b1 = 6;
+                offset_x += n1;
+            }
+        }
+        if (std::abs(offset_y) > 1.0f) {
+            if (std::abs(offset_y) < 1.0f)
+                return;
+            n2 = (int)floor(std::abs(offset_y));
+            if (offset_y > 0) {
+                b2 = 5;
+                offset_y -= n2;
+            } else {
+                b2 = 4;
+                offset_y += n2;
+            }
+        }
+        if (n1 || n2)
+            this->fake_wheel(b1, n1, b2, n2);
+    }
 };
 
 class ScrollHandler : public AbstractScrollHandler {
