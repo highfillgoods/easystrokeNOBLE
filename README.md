@@ -8,8 +8,6 @@ download git
 
 cd easystroke
 
-make clean
-
 make PREFIX=/usr
 
 sudo make install
