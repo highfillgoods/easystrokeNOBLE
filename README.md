@@ -5,6 +5,7 @@ sudo apt update && sudo apt install git build-essential autoconf automake libgtk
 
 ## build and install
 download git
+
 cd easystroke
 
 make clean
