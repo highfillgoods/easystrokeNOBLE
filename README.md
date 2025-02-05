@@ -6,7 +6,7 @@ cd easystroke
 make clean
 make PREFIX=/usr
 
-# Despite numerous warnings, it produced the executable #"easystroke". This progress indicates a successful build.
+# Despite numerous warnings, it produced the executable easystroke. This progress indicates a successful build.
 
 sudo make install
 
