@@ -1,3 +1,12 @@
+2024-12-14 Release 0.6.1 - Ubuntu 24.04 Noble Compatibility Update (Carson Highfill)
+	* Fix TreeView row highlighting in actions tab for proper UI display
+	* Fix Misc type action Details dropdown menu not appearing correctly
+	* Fix stroke serialization to properly save/load gesture coordinates
+	* Update build system compatibility for Ubuntu 24.04 Noble Numbat
+	* Modernize dependencies and build requirements for current Ubuntu LTS
+	* Comprehensive README.md documentation overhaul with installation guide
+	* Verified functionality on Ubuntu Mate 24.04 desktop environment
+
 2013-03-27 Release 0.6.0
 	* Update easystroke to gtk3
 	* Refactor event handling code
