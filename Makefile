@@ -53,7 +53,7 @@ DIST     = easystroke-$(VERSION)
 
 all: $(BINARY) $(MOFILES)
 
-.PHONY: all clean translate update-translations compile-translations complete
+.PHONY: all clean translate update-translations compile-translations complete deb
 
 clean:
 	$(RM) $(OFILES) $(BINARY) $(GENFILES) $(DEPFILES) $(MANPAGE) $(GZFILES) po/*.pot
@@ -154,3 +154,13 @@ complete: .clang_complete
 .clang_complete: Makefile
 	@echo $(CXXSTD) > $@
 	@$(foreach inc,$(INCLUDES),echo $(inc) >> $@;)
+
+deb: 
+	@echo "Building .deb package..."
+	@which dpkg-buildpackage >/dev/null 2>&1 || (echo "Error: dpkg-buildpackage not found. Install with: sudo apt install dpkg-dev"; exit 1)
+	@echo "Checking build dependencies..."
+	@dpkg-checkbuilddeps 2>/dev/null || (echo "Missing build dependencies. Install with:"; echo "sudo apt install debhelper help2man"; exit 1)
+	dpkg-buildpackage -us -uc -b
+	@echo "Package built successfully!"
+	@echo "Generated files:"
+	@ls -la ../easystroke_*.deb 2>/dev/null || echo "Check parent directory for .deb files"

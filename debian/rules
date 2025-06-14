@@ -1,0 +1,24 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# This has to be exported to make some magic below work.
+export DH_OPTIONS
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	$(MAKE) PREFIX=/usr
+
+override_dh_auto_install:
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/easystroke PREFIX=/usr
+
+override_dh_auto_clean:
+	$(MAKE) clean
+	dh_auto_clean
+
+override_dh_installman:
+	$(MAKE) man
+	dh_installman easystroke.1
