@@ -23,6 +23,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/split_member.hpp>
+#include <boost/serialization/vector.hpp>
 #include <cmath>  // For std::abs, floor, log, exp
 
 #include <X11/X.h>
@@ -91,21 +92,47 @@ private:
     // --- Serialization template functions ---
     template<class Archive>
     void save(Archive & ar, const unsigned int version) const {
-        // Save the basic members. (Adjust as needed.)
-        ar & trigger;
+        // Save the stroke points
+        std::vector<Point> ps;
+        for (unsigned int i = 0; i < size(); i++)
+            ps.push_back(points(i));
+        ar & ps;
+        
+        // Save the basic members
         ar & button;
-        ar & modifiers;
+        ar & trigger;
         ar & timeout;
-        // Optionally, you could save stroke data here if needed.
+        ar & modifiers;
     }
     
     template<class Archive>
     void load(Archive & ar, const unsigned int version) {
-        ar & trigger;
+        std::vector<Point> ps;
+        ar & ps;
+        
+        // Reconstruct the stroke from the points
+        if (ps.size()) {
+            stroke_t *s = stroke_alloc(ps.size());
+            for (std::vector<Point>::iterator i = ps.begin(); i != ps.end(); ++i)
+                stroke_add_point(s, i->x, i->y);
+            stroke_finish(s);
+            stroke.reset(s, &stroke_free);
+        }
+        
+        // Load the basic members
         ar & button;
-        ar & modifiers;
+        ar & trigger;
         ar & timeout;
-        // Optionally, you could load stroke data here.
+        ar & modifiers;
+        
+        // Handle version compatibility
+        if (version < 2) {
+            trigger = button ? button : AnyModifier;
+            button = 0;
+        }
+        if (version < 4) {
+            timeout = false;
+        }
     }
     // --- End serialization functions ---
 
