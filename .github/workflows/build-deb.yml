@@ -1,0 +1,145 @@
+name: Build Debian Package
+
+# Workflow triggers
+on:
+  # Trigger on push to version tags (e.g., v0.6.1)
+  push:
+    tags:
+      - 'v*'
+  
+  # Allow manual workflow dispatch for testing
+  workflow_dispatch:
+  
+  # Trigger on pull requests for testing builds
+  pull_request:
+    branches:
+      - master
+      - main
+
+# Set permissions for the workflow
+permissions:
+  # Required for creating releases and uploading assets
+  contents: write
+  # Required for PR checks
+  pull-requests: read
+
+jobs:
+  build-deb:
+    # Use Ubuntu 24.04 (Noble Numbat) runner for compatibility
+    runs-on: ubuntu-24.04
+    
+    steps:
+      # Checkout the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch all history for proper version detection
+          fetch-depth: 0
+      
+      # Install build dependencies
+      # These match the dependencies listed in debian/control and README.md
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            debhelper \
+            dpkg-dev \
+            libgtkmm-3.0-dev \
+            libdbus-glib-1-dev \
+            libboost-serialization-dev \
+            libx11-dev \
+            libxext-dev \
+            libxi-dev \
+            libxfixes-dev \
+            libxtst-dev \
+            pkg-config \
+            intltool \
+            help2man \
+            gettext \
+            xorg-dev
+      
+      # Display system information for debugging
+      - name: Display system information
+        run: |
+          echo "Ubuntu version:"
+          lsb_release -a
+          echo "Compiler version:"
+          gcc --version
+          echo "Available packages:"
+          dpkg -l | grep -E "(gtk|boost|x11)"
+      
+      # Build the .deb package using the project's Makefile
+      - name: Build Debian package
+        run: |
+          # The 'make deb' target uses dpkg-buildpackage
+          make deb
+          
+          # List generated files
+          echo "Generated packages:"
+          ls -la ../easystroke*.deb ../easystroke*.changes ../easystroke*.buildinfo || true
+      
+      # Move built packages to the current directory for easier access
+      - name: Collect build artifacts
+        run: |
+          # Create artifacts directory
+          mkdir -p artifacts
+          
+          # Move all generated files to artifacts directory
+          mv ../easystroke*.deb artifacts/ || true
+          mv ../easystroke*.changes artifacts/ || true
+          mv ../easystroke*.buildinfo artifacts/ || true
+          
+          # List collected artifacts
+          echo "Collected artifacts:"
+          ls -la artifacts/
+      
+      # Generate SHA256 checksums for the .deb file
+      - name: Generate checksums
+        run: |
+          cd artifacts
+          sha256sum *.deb > SHA256SUMS
+          echo "Checksums:"
+          cat SHA256SUMS
+      
+      # Upload artifacts for pull request builds
+      # This allows downloading the package for testing without creating a release
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: easystroke-deb-${{ github.sha }}
+          path: artifacts/
+          retention-days: 7
+      
+      # Create release and upload assets when pushing a version tag
+      - name: Create release and upload assets
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          # Use the tag message as release notes if available
+          generate_release_notes: true
+          # Mark as prerelease if the tag contains '-'
+          prerelease: ${{ contains(github.ref, '-') }}
+          # Upload the .deb package and checksums
+          files: |
+            artifacts/*.deb
+            artifacts/SHA256SUMS
+          # Fail the workflow if release creation fails
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      # Display final status
+      - name: Build summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Package Information" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          dpkg --info artifacts/*.deb | head -20 >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### SHA256 Checksums" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cat artifacts/SHA256SUMS >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
