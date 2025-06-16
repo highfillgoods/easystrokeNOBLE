@@ -1,0 +1,20 @@
+easystroke (0.6.1-1) unstable; urgency=medium
+
+  * Version 0.6.1 release - Ubuntu 24.04 Noble Numbat compatibility
+  * Fix TreeView row highlighting in actions tab for proper UI display
+  * Fix Misc type action Details dropdown menu not appearing correctly
+  * Fix stroke serialization to save/load gesture coordinates properly
+  * Comprehensive README.md documentation overhaul with installation guide
+  * Updated build system compatibility for Ubuntu 24.04 Noble Numbat
+  * Modernized dependencies and build requirements for current Ubuntu LTS
+  * Verified functionality on Ubuntu Mate 24.04 desktop environment
+
+ -- Letiliel <4447503+Letiliel@users.noreply.github.com>  Sat, 14 Dec 2024 12:00:00 +0000
+
+easystroke (0.6.0-25) unstable; urgency=medium
+
+  * Community fork updated for Ubuntu Noble 24.04 compatibility
+  * Various build system improvements
+  * Documentation updates
+
+ -- EasystrokeNOBLE Community <maintainer@example.com>  Wed, 01 May 2024 12:00:00 +0000

@@ -12,3 +12,11 @@ po/POTFILES.in
 po/*.pot
 easystroke.desktop
 .clang_complete
+
+# Debian packaging build artifacts
+debian/debhelper-build-stamp
+debian/easystroke.debhelper.log
+debian/easystroke.substvars
+debian/files
+debian/.debhelper/
+debian/easystroke/

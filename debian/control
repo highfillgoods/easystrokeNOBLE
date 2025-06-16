@@ -1,0 +1,38 @@
+Source: easystroke
+Section: x11
+Priority: optional
+Maintainer: EasystrokeNOBLE Community <maintainer@example.com>
+Build-Depends: debhelper (>= 10),
+               libgtkmm-3.0-dev,
+               libdbus-glib-1-dev,
+               libboost-serialization-dev,
+               libx11-dev,
+               libxext-dev,
+               libxi-dev,
+               libxfixes-dev,
+               libxtst-dev,
+               pkg-config,
+               intltool,
+               help2man
+Standards-Version: 4.1.2
+Homepage: https://github.com/easystroke/easystroke
+Vcs-Git: https://github.com/easystroke/easystroke.git
+Vcs-Browser: https://github.com/easystroke/easystroke
+
+Package: easystroke
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: X11 gesture recognition application
+ Easystroke is a gesture-recognition application for X11 that allows users
+ to control their desktop using mouse gestures. It is written in C++ using
+ GTKmm 3.0 and integrates deeply with X11 for input handling.
+ .
+ Features include:
+  * Mouse gesture recognition with configurable sensitivity
+  * Action execution based on recognized gestures
+  * Application-specific gesture contexts
+  * Visual feedback during gesture input
+  * Comprehensive configuration interface
+ .
+ This is the community-maintained fork that has been updated to work
+ with modern Ubuntu distributions (Noble 24.04+).

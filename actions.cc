@@ -54,12 +54,12 @@ void TreeViewMulti::on_drag_begin(const Glib::RefPtr<Gdk::DragContext> &context)
 }
 
 // --- Provide a complete definition for negate ---
-// This is a stub implementation. Adjust the logic as needed.
 bool negate(bool pending, Gtk::TreeModel::const_iterator iter, bool currently_selected)
 {
-    // For example, if pending is true, invert the current selection state;
-    // otherwise, just return the current state.
-    return pending ? !currently_selected : currently_selected;
+    // The original implementation was: bool negate(bool b) { return !b; }
+    // When pending is true (during drag), we want to return false to prevent selection changes
+    // When pending is false, we want to return true to allow selection changes
+    return !pending;
 }
 
 // --- Constructor for TreeViewMulti ---
@@ -230,6 +230,7 @@ Actions::Actions() :
 
     update_action_list();
     tv.set_model(tm);
+    tv.set_rules_hint(true);  // Enable alternating row colors and better selection visibility
     tv.enable_model_drag_source();
     tv.enable_model_drag_dest();
 

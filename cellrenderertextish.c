@@ -914,6 +914,8 @@ CellEditableCombo* cell_editable_combo_construct (GType object_type, CellRendere
 		}
 	}
 	g_signal_connect_data ((GtkComboBox*) self, "changed", (GCallback) ___lambda2__gtk_combo_box_changed, block1_data_ref (_data1_), (GClosureNotify) block1_data_unref, 0);
+	gtk_widget_show_all((GtkWidget*)self);
+	gtk_widget_grab_focus((GtkWidget*)self);
 	block1_data_unref (_data1_);
 	_data1_ = NULL;
 	return self;
