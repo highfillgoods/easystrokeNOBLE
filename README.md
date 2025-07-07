@@ -10,11 +10,14 @@ sudo apt update && sudo apt install git build-essential autoconf automake libgtk
 
 git clone https://github.com/highfillgoods/easystrokeNOBLE.git
 cd easystrokeNOBLE
+
 make
+
 sudo make install
 
 ## to run easystroke run either or
 /usr/local/bin/easystroke
+
 easystroke
 
 # Get EasyStroke to show in the Linux Start menu
@@ -25,7 +28,10 @@ Categories=GTK;Utility;Accessibility;
 Categories=GTK;Utility;Application;
 ---------------------------------------
 ls -l /usr/local/share/applications/easystroke.desktop
+
 desktop-file-validate /usr/local/share/applications/easystroke.desktop
+
 sudo gtk-update-icon-cache -f /usr/share/icons/hicolor/
+
 sudo update-desktop-database
 
