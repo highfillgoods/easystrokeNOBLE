@@ -37,3 +37,21 @@ sudo gtk-update-icon-cache -f /usr/share/icons/hicolor/
 
 sudo update-desktop-database
 
+# make it shot in the menu
+---------------------------------------
+Open a terminal and run mozo to launch the menu editor.
+In the left-hand pane of the Menu Editor, select a category where you'd like the program to appear. "Accessories" or "System Tools" are good choices.
+In the right-hand pane, click "New Item".
+A "Create Launcher" window will appear. Fill it out as follows:
+
+Type: Application
+
+Name: Easystroke
+
+Command: easystroke
+
+Comment: Mouse gesture recognition (This is optional, but helpful).
+
+Now, let's give it an icon. Click the default spring-board icon on the left of the "Create Launcher" window.
+An icon browser will open. Navigate to /usr/local/share/icons/hicolor/scalable/apps/.
+You should see the easystroke.svg file there. Select it and click "Open".
