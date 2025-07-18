@@ -6,9 +6,11 @@ sudo apt update && sudo apt install git build-essential autoconf automake libgtk
 
 ## build and install
 #download git
+
 #make PREFIX=/usr
 
 git clone https://github.com/highfillgoods/easystrokeNOBLE.git
+
 cd easystrokeNOBLE
 
 make
